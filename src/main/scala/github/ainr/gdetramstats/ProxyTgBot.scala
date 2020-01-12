@@ -1,4 +1,5 @@
-package example
+package github.ainr.gdetramstats
+
 
 import java.net.{InetSocketAddress, Proxy}
 
@@ -18,23 +19,11 @@ import com.softwaremill.sttp.okhttp._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-object SttpBackends {
-  val default = OkHttpFutureBackend()
-}
-
-abstract class ExampleBot(val token: String) extends TelegramBot {
-  LoggerConfig.factory = PrintLoggerFactory()
-  LoggerConfig.level = LogLevel.TRACE
-
-  implicit val backend = SttpBackends.default
-  override val client: RequestHandler[Future] = new FutureSttpClient(token)
-}
-
-class ProxyBot(token: String) extends ExampleBot(token)
+class ProxyTgBot(token: String, host: String, port: Int) extends TgBot(token)
   with Polling
   with Commands[Future] {
 
-  val proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved("localhost", 8118))
+  val proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved(host, port))
 
   override val client = new ScalajHttpClient(token, proxy)
 
@@ -45,14 +34,6 @@ class ProxyBot(token: String) extends ExampleBot(token)
   override def receiveMessage(msg: Message): Future[Unit] =
     msg.text.fold(Future.successful(())) { text =>
       request(SendMessage(msg.source, text.reverse)).void
-  }
+    }
 
-}
-
-object Hello extends App {
-  val bot = new ProxyBot("468602498:AAGLQReXfAm7ORtyp9vJCyB3Q-ABZePphQk")
-  bot.run()
-  println("Press [ENTER] to shutdown the bot, it may take a few seconds...")
-  scala.io.StdIn.readLine()
-  bot.shutdown() // initiate shutdown
 }

@@ -1,11 +1,11 @@
 import Dependencies._
 
-ThisBuild / version          := "0.1.0-SNAPSHOT"
+ThisBuild / version          := "0.1.0"
 ThisBuild / organization     := "com.ainr"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "tgBotA",
+    name := "GdeTramStatsBot",
     libraryDependencies += scalaTest % Test,
     libraryDependencies += "com.bot4s" %% "telegram-akka" % "4.4.0-RC2"
   )
