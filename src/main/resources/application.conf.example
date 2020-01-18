@@ -1,0 +1,20 @@
+
+GdeTramStats {
+
+	telegram {
+		token = ""
+        proxyStatus = "enable"
+
+			proxy {
+        	    host = "localhost"
+        	    port = 8118
+        	}
+	}
+
+	doobie {
+	    driver = "org.postgresql.Driver"
+	    url = "jdbc:postgresql:gdetram"
+		username = ""
+		password = ""
+	}
+}

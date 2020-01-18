@@ -1,29 +1,23 @@
 package github.ainr.gdetramstats
 
-import cats.effect.IO
-import doobie.free.connection.ConnectionIO
-import doobie.implicits._
-import doobie.util.ExecutionContexts
-import doobie.util.transactor.Transactor
+import com.typesafe.config.ConfigFactory
 
 object Application extends App {
 
-    implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
-    val transactor = Transactor.fromDriverManager[IO](
-        "org.postgresql.Driver",
-        "jdbc:postgresql:gdetram",
-        "gdetram",
-        "pass"
-    )
+  val conf = ConfigFactory.load("application.conf")
+  val token = conf.getString("GdeTramStats.telegram.token")
+  val proxyStatus = conf.getString("GdeTramStats.telegram.proxyStatus")
+  val host = conf.getString("GdeTramStats.telegram.proxy.host")
+  val port = conf.getInt("GdeTramStats.telegram.proxy.port")
 
-    val program: ConnectionIO[Int] = sql"select population from country where name='Ekb'".query[Int].unique
-    val task: IO[Int] = program.transact(transactor)
-    val result: Int = task.unsafeRunSync
-    println(s"Result ${result}")
+  val bot = if (proxyStatus == "enable") {
+    new GdeTramStatsTgProxyBot(token, host, port)
+  } else {
+    new GdeTramStatsTgBot(token)
+  }
 
-    val bot = new ProxyTgBot("468602498:AAGLQReXfAm7ORtyp9vJCyB3Q-ABZePphQk", "localhost", 8118)
-    bot.run()
-    println("Press [ENTER] to shutdown the bot, it may take a few seconds...")
-    scala.io.StdIn.readLine()
-    bot.shutdown() // initiate shutdown
+  bot.run()
+  println("Press [ENTER] to shutdown the bot, it may take a few seconds...")
+  scala.io.StdIn.readLine()
+  bot.shutdown() // initiate shutdown
 }
