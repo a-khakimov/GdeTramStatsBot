@@ -17,15 +17,59 @@ class GdeTramStatsTgBot(token: String) extends TgBot(token)
   val gdetramdb = new GdeTramDatabase
   override val client = new ScalajHttpClient(token)
 
-  onCommand("uniqueVkUsersDay")  { implicit msg => reply(gdetramdb.uniqueVkUsersDay().toString).void }
-  onCommand("uniqueVkUsersWeek") { implicit msg => reply(gdetramdb.uniqueVkUsersWeek().toString).void }
-  onCommand("uniqueTgUsersDay")  { implicit msg => reply(gdetramdb.uniqueTgUsersDay().toString).void }
-  onCommand("uniqueVkUsersWeek") { implicit msg => reply(gdetramdb.uniqueTgUsersWeek().toString).void }
+  onCommand("/uniqueVkUsersDay")     { implicit msg => reply(gdetramdb.uniqueVkUsersDay().toString).void     }
+  onCommand("/uniqueVkUsersWeek")    { implicit msg => reply(gdetramdb.uniqueVkUsersWeek().toString).void    }
+  onCommand("/uniqueTgUsersDay")     { implicit msg => reply(gdetramdb.uniqueTgUsersDay().toString).void     }
+  onCommand("/uniqueTgUsersWeek")    { implicit msg => reply(gdetramdb.uniqueTgUsersWeek().toString).void    }
 
-  onCommand("numberVkMessagesDay")  { implicit msg => reply(gdetramdb.numberVkMessagesDay().toString).void }
-  onCommand("numberVkMessagesWeek") { implicit msg => reply(gdetramdb.numberVkMessagesWeek().toString).void }
-  onCommand("numberTgMessagesDay")  { implicit msg => reply(gdetramdb.numberTgMessagesDay().toString).void }
-  onCommand("numberTgMessagesWeek") { implicit msg => reply(gdetramdb.numberTgMessagesWeek().toString).void }
+  onCommand("/numberVkMessagesDay")  { implicit msg => reply(gdetramdb.numberVkMessagesDay().toString).void  }
+  onCommand("/numberVkMessagesWeek") { implicit msg => reply(gdetramdb.numberVkMessagesWeek().toString).void }
+  onCommand("/numberTgMessagesDay")  { implicit msg => reply(gdetramdb.numberTgMessagesDay().toString).void  }
+  onCommand("/numberTgMessagesWeek") { implicit msg => reply(gdetramdb.numberTgMessagesWeek().toString).void }
+
+  onCommand("/numberOfAllMessages") { implicit msg => reply(gdetramdb.numberOfAllMessages()).void }
+
+  onCommand("/top10vkUsersDay") {
+    val top = gdetramdb.top10vkUsersDay().map(
+      user => ("https://vk.com/id" + user._1.toString() + " sent " + user._2.toString + " messages\n")
+    ).fold("")(_ + _)
+    implicit msg => reply(top).void
+  }
+
+  onCommand("/top10vkUsersWeek") {
+    val top = gdetramdb.top10vkUsersWeek().map(
+      user => ("https://vk.com/id" + user._1.toString() + " sent " + user._2.toString + " messages\n")
+    ).fold("")(_ + _)
+    implicit msg => reply(top).void
+  }
+
+  onCommand("/top10stopsDay") {
+    val top = gdetramdb.top10stopsDay().map(
+      a => ("[" + a._2.toString() + "] " + a._1.toString + "\n")
+    ).fold("")(_ + _)
+    implicit msg => reply(top).void
+  }
+
+  onCommand("/top10stopsWeek") {
+    val top = gdetramdb.top10stopsWeek().map(
+      a => ("[" + a._2.toString() + "] " + a._1.toString + "\n")
+    ).fold("")(_ + _)
+    implicit msg => reply(top).void
+  }
+
+  onCommand("/inactiveVkUsers") {
+    val top = gdetramdb.inactiveVkUsers().map(
+      a => ("[" + a._1.toString() + "] https://vk.com/id" + a._2.toString + "\n")
+    ).fold("")(_ + _)
+    implicit msg => reply(top).void
+  }
+
+  onCommand("/inactiveTgUsers") {
+    val top = gdetramdb.inactiveTgUsers().map(
+      a => ("[" + a._1.toString() + "] " + a._2.toString + "\n")
+    ).fold("")(_ + _)
+    implicit msg => reply(top).void
+  }
 
   onCommand("help") { implicit msg =>
     val help = "" +
@@ -41,14 +85,19 @@ class GdeTramStatsTgBot(token: String) extends TgBot(token)
       "/numberTgMessagesDay - Общее количество сообщений в телеграм за сутки\n" +
       "/numberTgMessagesWeek - Общее количество сообщений в телеграм за неделю\n" +
       "\n" +
-      ""
+      "/numberOfAllMessages - Количество всех сообщений\n" +
+      "/top10vkUsersDay - Топ 10 пользователей вк по количеству запросов за сутки\n" +
+      "/top10vkUsersWeek - Топ 10 пользователей вк по количеству запросов за неделю\n" +
+      "/inactiveVkUsers - Список пользователей вк, которые не писали боту в течении 30 дней\n" +
+      "/inactiveTgUsers - Список пользователей телеграм, которые не писали боту в течении 30 дней\n" +
+      "\n"
     reply(help).void
   }
-/*
+
+  /* For example
   override def receiveMessage(msg: Message): Future[Unit] =
     msg.text.fold(Future.successful(())) { text =>
       request(SendMessage(msg.source, "")).void
     }
-
- */
+  */
 }
